@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Accessibility Refresher | Andrea MacFarlane</title>
+  <meta name="description" content="A one-hour digital accessibility refresher course for school district staff, covering key laws, empathy, and practical techniques for creating accessible digital content." />
+  <meta name="author" content="Andrea MacFarlane" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --navy:         #1a2744;
+      --navy-mid:     #243258;
+      --navy-light:   #2e3f6e;
+      --steel:        #4a5a7a;
+      --slate:        #6b7a96;
+      --silver:       #c8cdd8;
+      --fog:          #e8eaef;
+      --snow:         #f4f5f8;
+      --white:        #ffffff;
+      --accent:       #3a6eb5;
+      --accent-light: #5a8fd4;
+      --gold:         #c8a84b;
+      --success:      #2e7d5e;
+      --success-bg:   #e8f5ef;
+      --error:        #9b2335;
+      --error-bg:     #fdf0f1;
+      --warn:         #7a5c1e;
+      --font: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+      --radius-sm: 4px; --radius: 8px; --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(26,39,68,.10);
+      --shadow:    0 4px 16px rgba(26,39,68,.12);
+      --transition: 0.22s ease;
+      --dash-h: 64px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; scroll-padding-top: calc(var(--dash-h) + 12px); }
+    body { font-family: var(--font); background: var(--snow); color: var(--navy); line-height: 1.85; -webkit-font-smoothing: antialiased; }
+
+    /* Skip link */
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--accent); color:var(--white); padding:.5rem 1rem; border-radius:var(--radius); font-weight:600; text-decoration:none; z-index:9999; transition:top var(--transition); }
+    .skip-link:focus { top:calc(var(--dash-h) + .5rem); }
+    :focus-visible { outline:3px solid var(--accent); outline-offset:3px; border-radius:var(--radius-sm); }
+
+    /* ── STICKY DASHBOARD ── */
+    #dashboard {
+      position: fixed; top:0; left:0; right:0; height:var(--dash-h);
+      background: var(--navy); z-index:1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem; gap: 1rem;
+      box-shadow: 0 2px 20px rgba(0,0,0,.28);
+    }
+    #home-btn {
+      display:flex; align-items:center; gap:.45rem;
+      background:none; border:1px solid rgba(255,255,255,.2);
+      color:rgba(255,255,255,.85); padding:.4rem .875rem;
+      border-radius:var(--radius); font-family:var(--font);
+      font-size:.8rem; font-weight:600; cursor:pointer;
+      text-decoration:none; white-space:nowrap; flex-shrink:0;
+      transition:background var(--transition), border-color var(--transition), color var(--transition);
+    }
+    #home-btn:hover { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.4); color:var(--white); }
+
+    #dash-steps {
+      display:flex; align-items:center; gap:.2rem; flex:1;
+      overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none;
+    }
+    #dash-steps::-webkit-scrollbar { display:none; }
+
+    .dash-step {
+      display:flex; align-items:center; gap:.35rem;
+      padding:.35rem .65rem; border-radius:var(--radius);
+      font-size:.75rem; font-weight:500;
+      color:rgba(255,255,255,.4); white-space:nowrap;
+      background:none; border:none; cursor:pointer;
+      font-family:var(--font); flex-shrink:0;
+      transition:color var(--transition), background var(--transition);
+    }
+    .dash-step:hover { color:rgba(255,255,255,.8); background:rgba(255,255,255,.06); }
+
+    .dash-icon {
+      width:22px; height:22px; border-radius:50%;
+      border:2px solid rgba(255,255,255,.2);
+      display:flex; align-items:center; justify-content:center;
+      font-size:.62rem; font-weight:700; color:rgba(255,255,255,.3);
+      flex-shrink:0; transition:all var(--transition);
+    }
+    .dash-step.active       { color:var(--white); }
+    .dash-step.active .dash-icon { background:var(--accent); border-color:var(--accent); color:var(--white); }
+    .dash-step.done         { color:rgba(255,255,255,.65); }
+    .dash-step.done .dash-icon   { background:var(--success); border-color:var(--success); color:var(--white); }
+
+    .dash-line { width:14px; height:2px; background:rgba(255,255,255,.12); flex-shrink:0; border-radius:1px; transition:background var(--transition); }
+    .dash-line.done { background:var(--success); }
+
+    #dash-progress { display:flex; align-items:center; gap:.625rem; flex-shrink:0; }
+    #dash-pct { font-size:.75rem; font-weight:700; color:var(--white); min-width:2.4rem; text-align:right; }
+    #dash-track { width:80px; height:6px; background:rgba(255,255,255,.15); border-radius:3px; overflow:hidden; }
+    #dash-fill  { height:100%; background:linear-gradient(90deg,var(--accent),var(--gold)); border-radius:3px; width:0%; transition:width .4s ease; }
+
+    @media(max-width:700px){
+      .dash-step span:not(.dash-icon){display:none;}
+      .dash-line{width:8px;}
+      #dash-track{width:50px;}
+    }
+
+    /* ── LAYOUT ── */
+    .section-wrapper {
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+      padding:calc(var(--dash-h) + 5rem) 2rem 7rem;
+    }
+    .container       { width:100%; max-width:820px; }
+    .container--wide { max-width:1020px; }
+
+    /* ── TYPOGRAPHY — ALL SANS-SERIF ── */
+    h1,h2,h3,h4 { font-family:var(--font); font-weight:700; line-height:1.2; }
+    h1 { font-size:clamp(2.1rem,5vw,3.4rem); letter-spacing:-.03em; }
+    h2 { font-size:clamp(1.6rem,3.5vw,2.4rem); letter-spacing:-.02em; margin-bottom:1rem; }
+    h3 { font-size:clamp(1.1rem,2.5vw,1.45rem); letter-spacing:-.01em; margin-bottom:1rem; }
+    h4 { font-size:1.05rem; margin-bottom:.5rem; }
+    p  { margin-bottom:1.2rem; }
+    p:last-child { margin-bottom:0; }
+    strong { font-weight:600; }
+    a { color:var(--accent); text-decoration:underline; text-underline-offset:3px; }
+    a:hover { color:var(--navy); }
+
+    /* ── SHARED COMPONENTS ── */
+    .section-label {
+      font-size:.72rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase;
+      color:var(--accent); margin-bottom:1rem;
+      display:flex; align-items:center; gap:.5rem;
+    }
+    .section-label::before { content:''; display:inline-block; width:20px; height:2px; background:var(--accent); }
+    .divider { width:48px; height:3px; background:linear-gradient(90deg,var(--accent),var(--gold)); border-radius:2px; margin:1.5rem 0 3rem; }
+    .callout {
+      background:var(--snow); border:1px solid var(--fog); border-radius:var(--radius);
+      border-left:4px solid var(--gold); padding:1.75rem 2rem; margin:2.5rem 0;
+    }
+    .callout p { font-size:.95rem; }
+
+    /* ── HERO ── */
+    #hero { background:var(--navy); color:var(--white); position:relative; overflow:hidden; }
+    #hero::before { content:''; position:absolute; top:-30%; right:-15%; width:600px; height:600px; border-radius:50%; background:radial-gradient(circle,rgba(58,110,181,.22) 0%,transparent 70%); pointer-events:none; }
+    #hero::after  { content:''; position:absolute; bottom:-20%; left:-10%; width:400px; height:400px; border-radius:50%; background:radial-gradient(circle,rgba(200,168,75,.10) 0%,transparent 70%); pointer-events:none; }
+
+    .hero-eyebrow { font-size:.73rem; font-weight:700; letter-spacing:.17em; text-transform:uppercase; color:var(--gold); margin-bottom:1.75rem; display:flex; align-items:center; gap:.6rem; }
+    .hero-eyebrow::before { content:''; display:inline-block; width:32px; height:2px; background:var(--gold); }
+    #hero h1 { color:var(--white); margin-bottom:2rem; }
+    #hero h1 em { font-style:italic; color:var(--accent-light); font-weight:400; }
+
+    .hero-meta { display:flex; flex-wrap:wrap; gap:2rem; margin-bottom:3rem; font-size:.88rem; color:var(--silver); }
+    .hero-meta-item { display:flex; align-items:center; gap:.4rem; }
+
+    .hero-author { display:inline-flex; align-items:center; gap:1rem; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); border-radius:var(--radius-lg); padding:1.1rem 1.5rem; margin-bottom:3rem; }
+    .hero-avatar { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--navy-light)); display:flex; align-items:center; justify-content:center; font-size:.85rem; font-weight:700; color:var(--white); flex-shrink:0; letter-spacing:.05em; }
+    .hero-author-name { font-weight:700; color:var(--white); font-size:1rem; }
+    .hero-author-role { font-size:.78rem; color:var(--silver); margin-top:.15rem; }
+
+    .hero-desc { font-size:1.1rem; color:rgba(255,255,255,.78); max-width:600px; margin-bottom:3rem; line-height:1.95; }
+
+    .btn-primary { display:inline-flex; align-items:center; gap:.5rem; background:var(--accent); color:var(--white); padding:.9rem 2rem; border-radius:var(--radius); font-weight:700; font-size:1rem; font-family:var(--font); text-decoration:none; border:none; cursor:pointer; transition:background var(--transition),transform var(--transition),box-shadow var(--transition); box-shadow:0 4px 16px rgba(58,110,181,.35); }
+    .btn-primary:hover { background:var(--accent-light); transform:translateY(-2px); box-shadow:0 6px 24px rgba(58,110,181,.45); color:var(--white); }
+
+    .hero-toc { margin-top:4.5rem; padding-top:3rem; border-top:1px solid rgba(255,255,255,.1); }
+    .toc-eyebrow { font-size:.7rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--silver); margin-bottom:1.5rem; }
+    .toc-list { list-style:none; display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:.5rem; }
+    .toc-list a { display:flex; align-items:center; gap:.75rem; color:rgba(255,255,255,.65); text-decoration:none; font-size:.88rem; padding:.5rem .75rem; border-radius:var(--radius-sm); transition:color var(--transition),background var(--transition); }
+    .toc-list a:hover { color:var(--white); background:rgba(255,255,255,.06); }
+    .toc-num { font-size:.95rem; font-weight:700; color:var(--gold); min-width:1.4rem; }
+
+    /* ── LAWS ── */
+    #laws { background:var(--white); }
+    .law-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(225px,1fr)); gap:1.25rem; margin:3rem 0; }
+    .law-card { background:var(--snow); border:1px solid var(--fog); border-radius:var(--radius); padding:1.625rem; border-left:4px solid var(--accent); transition:box-shadow var(--transition),transform var(--transition); }
+    .law-card:hover { box-shadow:var(--shadow); transform:translateY(-2px); }
+    .law-card h3 { font-size:.88rem; font-weight:700; color:var(--accent); margin-bottom:.5rem; letter-spacing:0; }
+    .law-card p  { font-size:.84rem; color:var(--steel); margin:0; line-height:1.65; }
+    .law-card--gold { border-left-color:var(--gold); }
+    .law-card--gold h3 { color:var(--warn); }
+
+    /* ── EMPATHY ── */
+    #empathy { background:var(--navy); color:var(--white); }
+    #empathy h2 { color:var(--white); }
+    #empathy .section-label { color:var(--gold); }
+    #empathy .section-label::before { background:var(--gold); }
+    #empathy .divider { background:linear-gradient(90deg,var(--gold),var(--accent-light)); }
+
+    .scenario-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-top:3rem; }
+    @media(max-width:640px){ .scenario-grid{grid-template-columns:1fr;} }
+
+    .scenario-card { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:var(--radius-lg); padding:2.5rem; position:relative; overflow:hidden; }
+    .scenario-card::before { content:''; position:absolute; top:0;left:0;right:0; height:3px; }
+    .scenario-card--staff::before   { background:linear-gradient(90deg,var(--accent),var(--accent-light)); }
+    .scenario-card--student::before { background:linear-gradient(90deg,var(--gold),#e8c870); }
+
+    .scenario-persona { display:flex; align-items:center; gap:1rem; margin-bottom:1.75rem; }
+    .persona-icon { width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
+    .scenario-card--staff .persona-icon   { background:rgba(58,110,181,.25); }
+    .scenario-card--student .persona-icon { background:rgba(200,168,75,.2); }
+    .persona-name { font-weight:700; color:var(--white); font-size:1rem; }
+    .persona-role { font-size:.77rem; color:var(--silver); margin-top:.15rem; }
+
+    .scenario-story      { font-size:.93rem; color:rgba(255,255,255,.82); line-height:1.85; margin-bottom:1rem; }
+    .scenario-reflection { margin-top:1.75rem; padding-top:1.75rem; border-top:1px solid rgba(255,255,255,.1); font-size:.88rem; color:rgba(255,255,255,.58); font-style:italic; }
+
+    .empathy-prompt { background:rgba(200,168,75,.12); border:1px solid rgba(200,168,75,.3); border-radius:var(--radius); padding:1.75rem 2rem; margin-top:3rem; font-size:.95rem; color:rgba(255,255,255,.85); }
+    .empathy-prompt strong { color:var(--gold); }
+
+    /* ── POUR ── */
+    #pour { background:var(--snow); }
+    .pour-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.25rem; margin:3rem 0; }
+    @media(max-width:580px){ .pour-grid{grid-template-columns:1fr;} }
+
+    .pour-card { background:var(--white); border-radius:var(--radius-lg); padding:2.25rem; box-shadow:var(--shadow-sm); border:1px solid var(--fog); position:relative; overflow:hidden; }
+    .pour-letter { font-size:5.5rem; font-weight:800; line-height:1; color:var(--fog); position:absolute; bottom:-.75rem; right:1rem; pointer-events:none; user-select:none; letter-spacing:-.05em; }
+    .pour-card h3 { font-size:1.2rem; display:flex; align-items:center; gap:.5rem; }
+    .pour-badge { font-size:.66rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; background:var(--accent); color:var(--white); padding:.15rem .5rem; border-radius:var(--radius-sm); }
+    .pour-card p { font-size:.9rem; color:var(--steel); margin-top:.75rem; }
+    .pour-examples { list-style:none; margin-top:1.1rem; }
+    .pour-examples li { font-size:.85rem; color:var(--slate); padding:.3rem 0 .3rem 1.25rem; position:relative; }
+    .pour-examples li::before { content:'→'; position:absolute; left:0; color:var(--accent); font-size:.78rem; }
+
+    /* ── BIG 5 TABS ── */
+    #big5 { background:var(--white); }
+    .practice-tabs { margin-top:3rem; }
+    .tab-list { display:flex; gap:.25rem; list-style:none; overflow-x:auto; margin-bottom:3rem; border-bottom:2px solid var(--fog); scrollbar-width:none; }
+    .tab-list::-webkit-scrollbar { display:none; }
+    .tab-btn { background:none; border:none; cursor:pointer; padding:.75rem 1.1rem; font-family:var(--font); font-size:.88rem; font-weight:500; color:var(--slate); border-radius:var(--radius-sm) var(--radius-sm) 0 0; white-space:nowrap; position:relative; transition:color var(--transition),background var(--transition); }
+    .tab-btn::after { content:''; position:absolute; bottom:-2px;left:0;right:0; height:2px; background:transparent; transition:background var(--transition); }
+    .tab-btn:hover { color:var(--navy); background:var(--snow); }
+    .tab-btn[aria-selected="true"] { color:var(--accent); font-weight:700; }
+    .tab-btn[aria-selected="true"]::after { background:var(--accent); }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+
+    .before-after { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin:2.5rem 0; }
+    @media(max-width:600px){ .before-after{grid-template-columns:1fr;} }
+    .ba-card { border-radius:var(--radius); padding:1.625rem; font-size:.88rem; }
+    .ba-card--before { background:var(--error-bg); border:1px solid #f0c0c5; }
+    .ba-card--after  { background:var(--success-bg); border:1px solid #b0dcc9; }
+    .ba-label { font-weight:700; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.875rem; }
+    .ba-card--before .ba-label { color:var(--error); }
+    .ba-card--after  .ba-label { color:var(--success); }
+    .ba-card code { display:block; font-family:'Courier New',monospace; font-size:.8rem; background:rgba(0,0,0,.05); padding:.5rem .75rem; border-radius:var(--radius-sm); margin:.5rem 0; word-break:break-word; }
+    .ba-card p { font-size:.84rem; color:var(--steel); margin-top:.625rem; }
+
+    .practice-tip { background:var(--snow); border:1px solid var(--fog); border-left:4px solid var(--accent); border-radius:var(--radius); padding:1.375rem 1.625rem; margin-top:2rem; font-size:.9rem; }
+    .practice-tip strong { color:var(--accent); }
+
+    .contrast-demo { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin:2.5rem 0; }
+    @media(max-width:560px){ .contrast-demo{grid-template-columns:1fr;} }
+    .contrast-swatch { border-radius:var(--radius); padding:1.625rem; text-align:center; }
+    .contrast-swatch p { font-size:1rem; font-weight:600; margin:0; }
+    .contrast-swatch .ratio { font-size:.75rem; margin-top:.5rem; opacity:.8; }
+    .swatch--fail { background:#f0e0e0; } .swatch--fail p { color:#c08080; }
+    .swatch--pass { background:#1a2744; } .swatch--pass p,.swatch--pass .ratio { color:#ffffff; }
+    .swatch--pass2 { background:#f4f5f8; } .swatch--pass2 p { color:#1a2744; }
+
+    .heading-demo { background:var(--snow); border:1px solid var(--fog); border-radius:var(--radius); padding:1.5rem; margin:2rem 0; }
+    .heading-demo .h1-demo { font-size:1.4rem; font-weight:700; color:var(--navy); margin-bottom:.3rem; }
+    .heading-demo .h2-demo { font-size:1.1rem; font-weight:600; color:var(--navy-mid); margin-bottom:.3rem; padding-left:1rem; }
+    .heading-demo .h3-demo { font-size:.92rem; font-weight:600; color:var(--steel); margin-bottom:.3rem; padding-left:2rem; }
+    .heading-demo .p-demo  { font-size:.85rem; color:var(--slate); padding-left:2rem; }
+    .heading-bad { background:var(--error-bg); border:1px solid #f0c0c5; border-radius:var(--radius); padding:1.25rem; margin-bottom:.625rem; }
+    .heading-bad p { font-size:.85rem; color:var(--error); }
+    .heading-bad .fake-h { font-size:1rem; font-weight:700; color:var(--navy); margin-bottom:.3rem; }
+
+    /* ── FORMATIVE ── */
+    #formative { background:var(--snow); }
+    .quiz-block { background:var(--white); border:1px solid var(--fog); border-radius:var(--radius-lg); padding:2.75rem; margin-bottom:3rem; box-shadow:var(--shadow-sm); }
+    .quiz-block h3 { font-size:1.1rem; margin-bottom:.5rem; }
+    .quiz-subtitle { font-size:.79rem; color:var(--slate); margin-bottom:2.25rem; }
+    .quiz-q { font-size:.95rem; font-weight:600; color:var(--navy); margin-bottom:1.1rem; }
+    .quiz-options { list-style:none; display:flex; flex-direction:column; gap:.75rem; margin-bottom:2rem; }
+    .quiz-option { display:flex; align-items:flex-start; gap:.875rem; }
+    .quiz-option input[type="radio"] { accent-color:var(--accent); width:18px; height:18px; flex-shrink:0; margin-top:2px; cursor:pointer; }
+    .quiz-option label { font-size:.9rem; color:var(--steel); cursor:pointer; line-height:1.65; }
+    .quiz-option label:hover { color:var(--navy); }
+    .quiz-submit { display:inline-flex; align-items:center; gap:.4rem; background:var(--navy); color:var(--white); border:none; padding:.7rem 1.5rem; border-radius:var(--radius); font-family:var(--font); font-size:.88rem; font-weight:600; cursor:pointer; transition:background var(--transition); }
+    .quiz-submit:hover { background:var(--accent); }
+    .quiz-feedback { margin-top:1.5rem; padding:1.1rem 1.375rem; border-radius:var(--radius); font-size:.88rem; display:none; }
+    .quiz-feedback.correct   { background:var(--success-bg); border:1px solid #b0dcc9; color:var(--success); display:block; }
+    .quiz-feedback.incorrect { background:var(--error-bg);   border:1px solid #f0c0c5; color:var(--error);   display:block; }
+
+    .match-item { background:var(--snow); border:1px solid var(--fog); border-radius:var(--radius); padding:1.1rem 1.375rem; font-size:.88rem; color:var(--navy); margin-bottom:1rem; }
+    .match-select { width:100%; padding:.55rem .75rem; font-family:var(--font); font-size:.85rem; color:var(--navy); background:var(--white); border:1px solid var(--silver); border-radius:var(--radius-sm); cursor:pointer; margin-top:.625rem; }
+    .match-select:focus { border-color:var(--accent); }
+
+    /* ── SUMMATIVE ── */
+    #summative { background:var(--navy-mid); color:var(--white); }
+    #summative h2 { color:var(--white); }
+    #summative .section-label { color:var(--gold); }
+    #summative .section-label::before { background:var(--gold); }
+    #summative .divider { background:linear-gradient(90deg,var(--gold),var(--accent-light)); }
+
+    .summative-card { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); border-radius:var(--radius-lg); padding:2.75rem; margin-top:2.5rem; }
+    .summative-steps { list-style:none; counter-reset:step; margin:2rem 0; }
+    .summative-steps li { counter-increment:step; display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.75rem; font-size:.95rem; color:rgba(255,255,255,.82); }
+    .summative-steps li::before { content:counter(step); font-size:.82rem; font-weight:700; color:var(--gold); background:rgba(200,168,75,.15); border:1px solid rgba(200,168,75,.3); border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .summative-textarea { width:100%; min-height:175px; font-family:var(--font); font-size:.9rem; color:var(--navy); background:var(--white); border:1px solid var(--silver); border-radius:var(--radius); padding:1.1rem; resize:vertical; line-height:1.75; }
+    .summative-textarea:focus { border-color:var(--accent-light); }
+    .summative-label { display:block; font-size:.85rem; font-weight:600; color:rgba(255,255,255,.7); margin-bottom:.625rem; margin-top:1.75rem; }
+    .rubric-table { width:100%; border-collapse:collapse; margin-top:2rem; font-size:.83rem; }
+    .rubric-table th { background:rgba(255,255,255,.08); color:rgba(255,255,255,.7); font-weight:700; padding:.75rem 1rem; text-align:left; border-bottom:1px solid rgba(255,255,255,.1); }
+    .rubric-table td { padding:.75rem 1rem; color:rgba(255,255,255,.75); border-bottom:1px solid rgba(255,255,255,.06); vertical-align:top; }
+    .rubric-table tr:last-child td { border-bottom:none; }
+    .btn-gold { display:inline-flex; align-items:center; gap:.5rem; background:var(--gold); color:var(--navy); padding:.85rem 1.875rem; border-radius:var(--radius); font-weight:700; font-size:.95rem; font-family:var(--font); border:none; cursor:pointer; transition:background var(--transition),transform var(--transition); margin-top:2rem; }
+    .btn-gold:hover { background:#d4b45a; transform:translateY(-2px); }
+    .completion-banner { display:none; background:var(--success-bg); border:2px solid var(--success); border-radius:var(--radius-lg); padding:2rem 2.25rem; margin-top:2rem; text-align:center; color:var(--success); }
+    .completion-banner h3 { font-size:1.3rem; color:var(--success); margin-bottom:.625rem; }
+    .completion-banner p  { font-size:.9rem; color:var(--steel); }
+
+    /* ── SAMPLE REFLECTION MODAL ── */
+    #sample-modal-backdrop {
+      display:none; position:fixed; inset:0;
+      background:rgba(10,16,32,.72); z-index:2000;
+      align-items:center; justify-content:center;
+      padding:1.5rem;
+    }
+    #sample-modal-backdrop.open { display:flex; }
+
+    #sample-modal {
+      background:var(--white); border-radius:var(--radius-lg);
+      max-width:740px; width:100%; max-height:90vh;
+      overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,.35);
+      display:flex; flex-direction:column;
+    }
+
+    .modal-header {
+      background:var(--navy); color:var(--white);
+      padding:1.75rem 2rem 1.5rem;
+      border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+      position:sticky; top:0; z-index:1;
+      display:flex; align-items:flex-start; justify-content:space-between; gap:1rem;
+    }
+    .modal-header-text {}
+    .modal-eyebrow { font-size:.7rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); margin-bottom:.4rem; }
+    .modal-header h3 { font-size:1.2rem; color:var(--white); margin:0; }
+    .modal-header p  { font-size:.82rem; color:var(--silver); margin-top:.3rem; }
+
+    #modal-close {
+      background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);
+      color:var(--white); border-radius:50%; width:36px; height:36px;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; flex-shrink:0; font-size:1.1rem; line-height:1;
+      transition:background var(--transition);
+    }
+    #modal-close:hover { background:rgba(255,255,255,.2); }
+
+    .modal-body { padding:2rem; }
+
+    .modal-sample-text {
+      background:var(--snow); border:1px solid var(--fog);
+      border-left:4px solid var(--accent);
+      border-radius:var(--radius); padding:1.5rem 1.75rem;
+      font-size:.92rem; color:var(--navy); line-height:1.85;
+      margin-bottom:2rem;
+    }
+    .modal-sample-text p { margin-bottom:.875rem; }
+    .modal-sample-text p:last-child { margin-bottom:0; }
+
+    .modal-rubric-section { margin-bottom:2rem; }
+    .modal-rubric-label { font-size:.72rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; color:var(--accent); margin-bottom:1rem; display:flex; align-items:center; gap:.5rem; }
+    .modal-rubric-label::before { content:''; display:inline-block; width:16px; height:2px; background:var(--accent); }
+
+    .self-assess-grid { display:flex; flex-direction:column; gap:.75rem; }
+    .self-assess-row {
+      display:flex; align-items:flex-start; gap:1rem;
+      background:var(--snow); border:1px solid var(--fog);
+      border-radius:var(--radius); padding:1rem 1.25rem;
+    }
+    .self-assess-check {
+      width:20px; height:20px; accent-color:var(--success);
+      flex-shrink:0; margin-top:1px; cursor:pointer;
+    }
+    .self-assess-label { font-size:.88rem; color:var(--navy); line-height:1.55; }
+    .self-assess-label strong { display:block; font-weight:600; margin-bottom:.15rem; }
+
+    .modal-footer {
+      padding:1.5rem 2rem 2rem;
+      display:flex; align-items:center; justify-content:space-between;
+      flex-wrap:wrap; gap:1rem;
+      border-top:1px solid var(--fog);
+    }
+    .modal-footer-note { font-size:.8rem; color:var(--slate); }
+    .btn-close-modal {
+      display:inline-flex; align-items:center; gap:.4rem;
+      background:var(--navy); color:var(--white);
+      padding:.7rem 1.5rem; border-radius:var(--radius);
+      font-family:var(--font); font-size:.88rem; font-weight:600;
+      border:none; cursor:pointer;
+      transition:background var(--transition);
+    }
+    .btn-close-modal:hover { background:var(--accent); }
+
+    /* ── VIDEO PLAYER ── */
+    .video-block {
+      margin: 2.5rem 0;
+      background: var(--navy);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+    .video-block video {
+      width: 100%;
+      display: block;
+      max-height: 420px;
+      background: #000;
+    }
+    .video-caption {
+      padding: 1rem 1.5rem;
+      font-size: .82rem;
+      color: var(--silver);
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+
+    /* ── KC3 SCENARIO DOC ── */
+    .scenario-doc {
+      background: var(--white);
+      border: 2px solid var(--fog);
+      border-radius: var(--radius);
+      padding: 2rem 2.25rem;
+      margin: 2rem 0;
+      font-size: .9rem;
+      line-height: 1.75;
+      position: relative;
+    }
+    .scenario-doc-label {
+      position: absolute;
+      top: -1px; left: -1px;
+      background: var(--accent);
+      color: var(--white);
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: .25rem .75rem;
+      border-radius: var(--radius) 0 var(--radius-sm) 0;
+    }
+    .scenario-doc h2 { font-size: 1.05rem; font-weight: 700; color: #c00; margin: 1.5rem 0 .5rem; }
+    .scenario-doc h3 { font-size: .9rem; font-weight: 700; color: var(--navy); margin: 1rem 0 .25rem; }
+    .scenario-doc p  { font-size: .88rem; color: #333; margin-bottom: .5rem; }
+    .scenario-doc .bad-link { color: #c00; text-decoration: underline; font-size: .88rem; }
+    .scenario-doc .low-contrast { color: #bbb; background: #fff; font-size: .88rem; }
+    .scenario-doc .fake-heading { font-size: 1rem; font-weight: 700; color: var(--navy); display: block; margin: .75rem 0 .25rem; }
+    .scenario-doc img-placeholder {
+      display: block;
+      background: #e8e8e8;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: .75rem 1rem;
+      font-size: .8rem;
+      color: #888;
+      margin: .5rem 0;
+    }
+    .scenario-doc .img-box {
+      display: block;
+      background: #e8e8e8;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: .75rem 1rem;
+      font-size: .8rem;
+      color: #888;
+      margin: .5rem 0;
+      font-style: italic;
+    }
+    .scenario-doc-issues {
+      background: var(--warn-bg, #fdf6e8);
+      border: 1px solid #e0c97a;
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-top: 1.5rem;
+      font-size: .82rem;
+      color: var(--warn);
+    }
+    .scenario-doc-issues strong { display: block; margin-bottom: .4rem; }
+
+    /* ── RESOURCES ── */
+    #resources { background:var(--navy); color:var(--white); padding-bottom:6rem; }
+    #resources h2 { color:var(--white); }
+    #resources .section-label { color:var(--gold); }
+    #resources .section-label::before { background:var(--gold); }
+    .resources-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:1.1rem; margin-top:2.75rem; }
+    .resource-card { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:var(--radius); padding:1.5rem; text-decoration:none; color:rgba(255,255,255,.8); transition:background var(--transition),transform var(--transition); display:flex; flex-direction:column; gap:.4rem; }
+    .resource-card:hover { background:rgba(255,255,255,.1); transform:translateY(-2px); color:var(--white); }
+    .resource-card-title { font-weight:600; font-size:.9rem; }
+    .resource-card-desc  { font-size:.77rem; color:var(--silver); }
+    .footer-credit { margin-top:4.5rem; padding-top:2.5rem; border-top:1px solid rgba(255,255,255,.1); display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:1rem; font-size:.82rem; color:rgba(255,255,255,.45); }
+    .footer-credit strong { color:rgba(255,255,255,.7); }
+
+    /* ── FADE-IN ── */
+    @media(prefers-reduced-motion:no-preference){
+      .fade-in { opacity:0; transform:translateY(18px); transition:opacity .5s ease,transform .5s ease; }
+      .fade-in.visible { opacity:1; transform:none; }
+    }
+
+    /* ── UTILITY ── */
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media print { #dashboard{display:none;} .section-wrapper{min-height:auto;page-break-inside:avoid;} }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<!-- ══════════════════════════════════════════
+     STICKY DASHBOARD
+══════════════════════════════════════════ -->
+<nav id="dashboard" aria-label="Course progress dashboard">
+
+  <a href="#hero" id="home-btn" aria-label="Return to module home page">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </a>
+
+  <div id="dash-steps" role="list" aria-label="Module sections">
+    <button class="dash-step active" data-section="hero"      onclick="scrollTo('hero')"      aria-label="Go to: Welcome"          role="listitem"><span class="dash-icon" aria-hidden="true">1</span><span>Welcome</span></button>
+    <div class="dash-line" aria-hidden="true"></div>
+    <button class="dash-step"        data-section="laws"      onclick="scrollTo('laws')"      aria-label="Go to: Laws"             role="listitem"><span class="dash-icon" aria-hidden="true">2</span><span>Laws</span></button>
+    <div class="dash-line" aria-hidden="true"></div>
+    <button class="dash-step"        data-section="empathy"   onclick="scrollTo('empathy')"   aria-label="Go to: Empathy"          role="listitem"><span class="dash-icon" aria-hidden="true">3</span><span>Empathy</span></button>
+    <div class="dash-line" aria-hidden="true"></div>
+    <button class="dash-step"        data-section="pour"      onclick="scrollTo('pour')"      aria-label="Go to: POUR"             role="listitem"><span class="dash-icon" aria-hidden="true">4</span><span>POUR</span></button>
+    <div class="dash-line" aria-hidden="true"></div>
+    <button class="dash-step"        data-section="big5"      onclick="scrollTo('big5')"      aria-label="Go to: The Big 5"        role="listitem"><span class="dash-icon" aria-hidden="true">5</span><span>Big 5</span></button>
+    <div class="dash-line" aria-hidden="true"></div>
+    <button class="dash-step"        data-section="formative" onclick="scrollTo('formative')" aria-label="Go to: Knowledge Checks" role="listitem"><span class="dash-icon" aria-hidden="true">6</span><span>Checks</span></button>
+    <div class="dash-line" aria-hidden="true"></div>
+    <button class="dash-step"        data-section="summative" onclick="scrollTo('summative')" aria-label="Go to: Summative Task"   role="listitem"><span class="dash-icon" aria-hidden="true">7</span><span>Task</span></button>
+    <div class="dash-line" aria-hidden="true"></div>
+    <button class="dash-step"        data-section="resources" onclick="scrollTo('resources')" aria-label="Go to: Resources"        role="listitem"><span class="dash-icon" aria-hidden="true">8</span><span>Resources</span></button>
+  </div>
+
+  <div id="dash-progress">
+    <div id="dash-track" role="progressbar" aria-label="Course completion percentage" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+      <div id="dash-fill"></div>
+    </div>
+    <span id="dash-pct" aria-live="polite">0%</span>
+  </div>
+
+</nav>
+
+<main id="main-content">
+
+  <!-- ══════════════════════════════════════════ HERO -->
+  <section id="hero" class="section-wrapper" aria-labelledby="hero-heading">
+    <div class="container">
+      <div class="hero-eyebrow">Digital Accessibility Refresher</div>
+      <h1 id="hero-heading">Make It <em>Accessible.</em><br/>Every Time.</h1>
+      <div class="hero-meta">
+        <span class="hero-meta-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Approximately 60 minutes
+        </span>
+        <span class="hero-meta-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          All district staff
+        </span>
+        <span class="hero-meta-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 0 3-3h7z"/></svg>
+          Refresher — prior course required
+        </span>
+      </div>
+      <div class="hero-author" role="region" aria-label="Module author">
+        <div class="hero-avatar" aria-hidden="true">AM</div>
+        <div>
+          <div class="hero-author-name">Andrea MacFarlane</div>
+          <div class="hero-author-role">Module Author &amp; Instructional Designer</div>
+        </div>
+      </div>
+      <p class="hero-desc">You've already completed the full digital accessibility course. This refresher brings the essentials back into focus — the laws that apply to your work, the human stories behind the guidelines, and the five practices you can apply in every document, email, and slide you create.</p>
+      <a href="#laws" class="btn-primary">
+        Begin Refresher
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M7 13l3 3 7-7"/><circle cx="12" cy="12" r="10"/></svg>
+      </a>
+      <nav class="hero-toc" aria-label="Table of contents">
+        <p class="toc-eyebrow">What's Inside</p>
+        <ul class="toc-list">
+          <li><a href="#laws">     <span class="toc-num" aria-hidden="true">1</span> Why It Still Matters</a></li>
+          <li><a href="#empathy">  <span class="toc-num" aria-hidden="true">2</span> Empathy in Action</a></li>
+          <li><a href="#pour">     <span class="toc-num" aria-hidden="true">3</span> POUR at a Glance</a></li>
+          <li><a href="#big5">     <span class="toc-num" aria-hidden="true">4</span> The Big 5 Practices</a></li>
+          <li><a href="#formative"><span class="toc-num" aria-hidden="true">5</span> Knowledge Checks (×3)</a></li>
+          <li><a href="#summative"><span class="toc-num" aria-hidden="true">6</span> Summative Task</a></li>
+          <li><a href="#resources"><span class="toc-num" aria-hidden="true">7</span> Resources &amp; Tools</a></li>
+        </ul>
+      </nav>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════ LAWS -->
+  <section id="laws" class="section-wrapper" aria-labelledby="laws-heading">
+    <div class="container fade-in">
+      <p class="section-label">Section 1</p>
+      <h2 id="laws-heading">Why It Still Matters</h2>
+      <div class="divider" aria-hidden="true"></div>
+      <p>Digital accessibility isn't a trend — it's a legal obligation and a civil right. These laws apply directly to the content <em>you</em> create as a district employee.</p>
+      <div class="law-grid" role="list">
+        <div class="law-card" role="listitem"><h3>Americans with Disabilities Act (ADA)</h3><p>Prohibits discrimination based on disability in public services. Courts have consistently ruled that websites and digital content are covered.</p></div>
+        <div class="law-card" role="listitem"><h3>Section 504 — Rehabilitation Act</h3><p>Requires programs receiving federal funding to provide equal access to individuals with disabilities. Applies to your district's digital communications.</p></div>
+        <div class="law-card" role="listitem"><h3>Section 508 — Rehabilitation Act</h3><p>Federal standard for accessible electronic and information technology. Sets the technical baseline referenced in WCAG 2.1 Level AA.</p></div>
+        <div class="law-card" role="listitem"><h3>IDEA</h3><p>Individuals with Disabilities Education Act ensures students with disabilities receive a free, appropriate public education — including accessible materials.</p></div>
+        <div class="law-card law-card--gold" role="listitem"><h3>Colorado HB 21-1110</h3><p>Colorado's own web accessibility law requiring state and local government digital content to meet WCAG 2.1 Level AA — and it covers your district.</p></div>
+        <div class="law-card law-card--gold" role="listitem"><h3>WCAG 2.2 — The Standard</h3><p>Web Content Accessibility Guidelines set by the W3C. Level AA is the current legal and ethical benchmark for all digital content your district publishes.</p></div>
+      </div>
+      <div class="callout" role="note">
+        <p><strong>The bottom line:</strong> Whether you're at a school site or the district office — creating an email, a Google Form, a PDF, or a slide deck — <strong>accessibility requirements apply to your work.</strong> Non-compliance creates real barriers for real people and exposes the district to legal risk.</p>
+      </div>
+
+      <div class="video-block">
+        <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">
+          <iframe
+            style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
+            src="https://www.youtube.com/embed/yyQjqH945Gc?si=FxsxbKv2UdbFyWJy"
+            title="The Universal Upgrade: Why Digital Accessibility Matters"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen
+          ></iframe>
+        </div>
+        <p class="video-caption">
+          <strong>Watch:</strong> The Universal Upgrade — a brief overview of why digital accessibility matters and who it affects.
+          <em>Captions are available — click the CC button in the video player to turn them on.</em>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════ EMPATHY -->
+  <section id="empathy" class="section-wrapper" aria-labelledby="empathy-heading">
+    <div class="container fade-in">
+      <p class="section-label">Section 2</p>
+      <h2 id="empathy-heading">Empathy in Action</h2>
+      <div class="divider" aria-hidden="true"></div>
+      <p>Laws and guidelines are important — but the <em>reason</em> we care about accessibility is people. Read these two scenarios and take a moment to sit with each one.</p>
+      <div class="scenario-grid">
+
+        <article class="scenario-card scenario-card--staff" aria-labelledby="staff-name">
+          <div class="scenario-persona">
+            <div class="persona-icon" aria-hidden="true">👩‍💼</div>
+            <div><div class="persona-name" id="staff-name">Maria, Administrative Assistant</div><div class="persona-role">Central Office — Finance Department</div></div>
+          </div>
+          <p class="scenario-story">Maria has been with the district for eleven years. Last fall, she experienced significant vision loss in one eye following a medical emergency. She now relies on a screen magnifier and, increasingly, a screen reader to get through her day.</p>
+          <p class="scenario-story">This week, a budget summary PDF was shared via email for an all-staff meeting. The file had been exported from a spreadsheet — no reading order defined, no column headers tagged, all the data presented as one flat image. Maria's screen reader read the contents as a single unbroken string of numbers with no context.</p>
+          <p class="scenario-story">She spent 45 minutes trying to reconstruct the table before the meeting started. She attended unprepared — not because she wasn't capable, but because the document wasn't built for how she now has to read.</p>
+          <p class="scenario-reflection">💬 <em>"I used to be the one who caught every number. Now I spend my energy just trying to get to the information."</em></p>
+        </article>
+
+        <article class="scenario-card scenario-card--student" aria-labelledby="student-name">
+          <div class="scenario-persona">
+            <div class="persona-icon" aria-hidden="true">🎒</div>
+            <div><div class="persona-name" id="student-name">DeShawn, 9th Grader</div><div class="persona-role">High School — English &amp; Biology</div></div>
+          </div>
+          <p class="scenario-story">DeShawn has dyslexia. He uses text-to-speech software every day — on his Chromebook for assignments, on his phone for anything longer than a paragraph. It's not a workaround; it's just how he reads best.</p>
+          <p class="scenario-story">His biology teacher posted a study guide as a scanned image of a printed worksheet — a photo of paper, uploaded to the class page as a JPEG. When DeShawn tried to use his text-to-speech tool, it found nothing to read. To his software, the guide was just a picture.</p>
+          <p class="scenario-story">He asked a friend to read it aloud on a video call the night before the test. His friend didn't have time for the whole thing. DeShawn showed up to the exam having reviewed less than half the material.</p>
+          <p class="scenario-reflection">💬 <em>"I study really hard. But sometimes it feels like the work is figuring out how to get to the assignment, not doing the assignment."</em></p>
+        </article>
+
+      </div>
+      <div class="empathy-prompt" role="note">
+        <p><strong>Pause and reflect:</strong> Maria and DeShawn aren't edge cases — they represent the range of people in your district who rely on accessible content every single day. The documents you create, the emails you send, the slides you share: each one is an opportunity to include everyone, or to quietly leave someone behind.</p>
+        <p style="margin-top:1rem;">Accessibility isn't about compliance checklists. It's about <strong>doing right by your colleagues and your students.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════ POUR -->
+  <section id="pour" class="section-wrapper" aria-labelledby="pour-heading">
+    <div class="container fade-in">
+      <p class="section-label">Section 3</p>
+      <h2 id="pour-heading">POUR at a Glance</h2>
+      <div class="divider" aria-hidden="true"></div>
+      <p>Every WCAG guideline maps back to one of four principles. If you understand POUR, you understand the <em>why</em> behind every rule you apply.</p>
+      <div class="pour-grid">
+        <div class="pour-card">
+          <div class="pour-letter" aria-hidden="true">P</div>
+          <h3>Perceivable <span class="pour-badge">P</span></h3>
+          <p>Information must be presentable in ways users can perceive — it can't be invisible to <em>all</em> of their senses.</p>
+          <ul class="pour-examples" aria-label="Perceivable examples"><li>Alt text on images</li><li>Captions on videos</li><li>Sufficient color contrast</li><li>No information conveyed by color alone</li></ul>
+        </div>
+        <div class="pour-card">
+          <div class="pour-letter" aria-hidden="true">O</div>
+          <h3>Operable <span class="pour-badge">O</span></h3>
+          <p>Interface components and navigation must be operable — users must be able to use content, even without a mouse.</p>
+          <ul class="pour-examples" aria-label="Operable examples"><li>Full keyboard navigation</li><li>Visible focus indicators</li><li>No seizure-triggering content</li><li>Clear, descriptive page titles</li></ul>
+        </div>
+        <div class="pour-card">
+          <div class="pour-letter" aria-hidden="true">U</div>
+          <h3>Understandable <span class="pour-badge">U</span></h3>
+          <p>Information and interfaces must be understandable — users can comprehend both content and how to navigate it.</p>
+          <ul class="pour-examples" aria-label="Understandable examples"><li>Clear, plain language</li><li>Descriptive link text</li><li>Consistent navigation</li><li>Meaningful error messages</li></ul>
+        </div>
+        <div class="pour-card">
+          <div class="pour-letter" aria-hidden="true">R</div>
+          <h3>Robust <span class="pour-badge">R</span></h3>
+          <p>Content must be reliable enough to be interpreted by a wide variety of assistive technologies — now and in the future.</p>
+          <ul class="pour-examples" aria-label="Robust examples"><li>Valid, semantic structure</li><li>Proper heading hierarchy</li><li>Form fields with labels</li><li>Programmatic status messages</li></ul>
+        </div>
+      </div>
+      <div class="callout" role="note">
+        <p><strong>Quick gut-check:</strong> Before sharing any digital content, ask: Can everyone <strong>perceive</strong> it? Can they <strong>operate</strong> it without a mouse? Will they <strong>understand</strong> it clearly? Is it <strong>robust</strong> enough for assistive tech? Four yeses and you're in good shape.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════ BIG 5 -->
+  <section id="big5" class="section-wrapper" aria-labelledby="big5-heading">
+    <div class="container--wide container fade-in">
+      <p class="section-label">Section 4</p>
+      <h2 id="big5-heading">The Big 5 Practices</h2>
+      <div class="divider" aria-hidden="true"></div>
+      <p>These five practices address the most common accessibility failures in everyday digital content. Master these, and you'll eliminate the majority of barriers in what you create.</p>
+      <div class="practice-tabs">
+        <div role="tablist" class="tab-list" aria-label="Accessibility practices">
+          <button role="tab" class="tab-btn" id="tab-h" aria-selected="true"  aria-controls="panel-h">1. Headings</button>
+          <button role="tab" class="tab-btn" id="tab-a" aria-selected="false" aria-controls="panel-a">2. Alt Text</button>
+          <button role="tab" class="tab-btn" id="tab-c" aria-selected="false" aria-controls="panel-c">3. Color Contrast</button>
+          <button role="tab" class="tab-btn" id="tab-l" aria-selected="false" aria-controls="panel-l">4. Descriptive Links</button>
+          <button role="tab" class="tab-btn" id="tab-v" aria-selected="false" aria-controls="panel-v">5. Captions</button>
+        </div>
+
+        <div role="tabpanel" id="panel-h" aria-labelledby="tab-h" class="tab-panel active" aria-hidden="false">
+          <h3>Use Headings as Structure, Not Style</h3>
+          <p>Headings are the skeleton of your document. Screen readers use them as navigation landmarks — users can jump directly from heading to heading. A heading chosen because it "looks bold" breaks that structure entirely.</p>
+          <p><strong>The rule:</strong> Use heading levels in logical order (H1 → H2 → H3). Never skip levels. Never use a heading just because you like how it looks.</p>
+          <div class="before-after">
+            <div class="ba-card ba-card--before">
+              <p class="ba-label">✗ Inaccessible</p>
+              <div class="heading-bad"><div class="fake-h">Meeting Notes — April</div><p>Bold text used as a "heading"</p></div>
+              <p>Bold or large text <em>looks</em> like a heading but has no semantic meaning. A screen reader reads it as a paragraph — no navigation, no structure.</p>
+            </div>
+            <div class="ba-card ba-card--after">
+              <p class="ba-label">✓ Accessible</p>
+              <div class="heading-demo">
+                <div class="h1-demo">Meeting Notes — April</div>
+                <div class="h2-demo">Agenda Items</div>
+                <div class="h3-demo">Budget Review</div>
+                <div class="p-demo">Body text here…</div>
+              </div>
+              <p>Real heading styles create navigable structure for screen readers and other assistive tools.</p>
+            </div>
+          </div>
+          <div class="practice-tip"><strong>Quick apply:</strong> In Word, use the Styles pane (Heading 1, Heading 2…). In Google Docs, use the Paragraph Styles dropdown. Don't use Bold + font size — use actual heading styles.</div>
+        </div>
+
+        <div role="tabpanel" id="panel-a" aria-labelledby="tab-a" class="tab-panel" aria-hidden="true">
+          <h3>Write Alt Text That Actually Describes</h3>
+          <p>Alternative text is read aloud by screen readers in place of an image. Its purpose is to convey the <em>meaning and function</em> of the image — not just describe it literally.</p>
+          <p><strong>The rule:</strong> Describe what the image <em>communicates</em>. Decorative images get an empty alt attribute (<code>alt=""</code>) so screen readers skip them.</p>
+          <div class="before-after">
+            <div class="ba-card ba-card--before">
+              <p class="ba-label">✗ Inaccessible</p>
+              <code>alt="image"</code><code>alt="photo.jpg"</code><code>alt="graph"</code>
+              <p>These tell a screen reader user nothing about what they're missing.</p>
+            </div>
+            <div class="ba-card ba-card--after">
+              <p class="ba-label">✓ Accessible</p>
+              <code>alt="Bar graph showing 2024 student enrollment by school, with Jefferson Elementary highest at 612 students"</code>
+              <code>alt="Staff member demonstrates ergonomic desk setup with monitor at eye level"</code>
+              <p>Describe the meaning. Include key data from charts. Be specific enough that a non-sighted user gets the same information.</p>
+            </div>
+          </div>
+          <div class="practice-tip"><strong>Quick apply:</strong> Right-click any image → "Edit Alt Text." Ask: <em>if someone can't see this, what do they need to know?</em> For purely decorative images, leave alt text blank — don't delete the attribute.</div>
+        </div>
+
+        <div role="tabpanel" id="panel-c" aria-labelledby="tab-c" class="tab-panel" aria-hidden="true">
+          <h3>Contrast Isn't Just Aesthetics — It's Access</h3>
+          <p>Low contrast makes content difficult or impossible to read for people with low vision, color blindness, or even in bright sunlight.</p>
+          <p><strong>The rule (WCAG AA):</strong> Normal text needs at least <strong>4.5:1</strong>. Large text (18pt+ or bold 14pt+) needs at least <strong>3:1</strong>.</p>
+          <div class="contrast-demo" aria-label="Contrast ratio examples">
+            <div class="contrast-swatch swatch--fail"  role="img" aria-label="Fail: light gray on white, 1.6:1"><p>This text fails.</p><p class="ratio">~1.6:1 ✗</p></div>
+            <div class="contrast-swatch swatch--pass"  role="img" aria-label="Pass: white on navy, 14.7:1"><p>This text passes.</p><p class="ratio">~14.7:1 ✓</p></div>
+            <div class="contrast-swatch swatch--pass2" role="img" aria-label="Pass: navy on light gray, 12.1:1"><p>This text passes.</p><p class="ratio">~12.1:1 ✓</p></div>
+            <div class="contrast-swatch" style="background:#5a8fd4;" role="img" aria-label="Borderline: white on blue, 3.1:1 — large text only"><p style="color:#fff;font-weight:600;margin:0;">Large text only.</p><p class="ratio" style="color:rgba(255,255,255,.85);">~3.1:1 (large ✓)</p></div>
+          </div>
+          <div class="practice-tip"><strong>Quick apply:</strong> Use the free <a href="https://webaim.org/resources/contrastchecker/" target="_blank" rel="noopener">WebAIM Contrast Checker</a> before finalizing any design. Navy-on-white passes comfortably — watch out for grays, light blues, and yellow on white.</div>
+        </div>
+
+        <div role="tabpanel" id="panel-l" aria-labelledby="tab-l" class="tab-panel" aria-hidden="true">
+          <h3>Link Text Should Make Sense Out of Context</h3>
+          <p>Screen reader users often navigate by jumping between links — they hear only the link text, not the surrounding sentence. Vague link text is a wall.</p>
+          <p><strong>The rule:</strong> Link text must describe the destination clearly enough to stand alone. Avoid "click here," "read more," and raw URLs.</p>
+          <div class="before-after">
+            <div class="ba-card ba-card--before">
+              <p class="ba-label">✗ Inaccessible</p>
+              <code>For the staff handbook, click here.</code><code>Read more.</code><code>https://district.org/handbook2024-final-v3.pdf</code>
+              <p>Meaningless without surrounding context — which a screen reader user navigating by links won't have.</p>
+            </div>
+            <div class="ba-card ba-card--after">
+              <p class="ba-label">✓ Accessible</p>
+              <code>Download the 2024–25 Staff Handbook (PDF)</code><code>Read the full district accessibility policy</code><code>Register for the spring professional development workshop</code>
+              <p>Clear, specific, self-contained. A user jumping between links knows exactly what each one does.</p>
+            </div>
+          </div>
+          <div class="practice-tip"><strong>Quick apply:</strong> Before finalizing any document or email, skim just the links. Could you tell where each one goes with no other context? If not, rewrite the anchor text itself.</div>
+        </div>
+
+        <div role="tabpanel" id="panel-v" aria-labelledby="tab-v" class="tab-panel" aria-hidden="true">
+          <h3>If It Has Audio, It Needs Captions</h3>
+          <p>Captions aren't just for Deaf and hard-of-hearing viewers. They help English language learners, people in noisy or quiet environments, and anyone who learns better with text and audio together.</p>
+          <p><strong>The rule:</strong> All prerecorded video with audio must have accurate, synchronized captions. Auto-generated captions are a starting point — never a finished product.</p>
+          <div class="before-after">
+            <div class="ba-card ba-card--before">
+              <p class="ba-label">✗ Inaccessible</p>
+              <p>Unreviewed auto-captions:</p>
+              <code>"their going too the library too check out books four students"</code>
+              <p>Auto-captions can be wildly inaccurate, especially with proper nouns, technical terms, or accents.</p>
+            </div>
+            <div class="ba-card ba-card--after">
+              <p class="ba-label">✓ Accessible</p>
+              <p>Reviewed, corrected captions:</p>
+              <code>"They're going to the library to check out books for students."</code>
+              <p>Reviewed for accuracy, correct punctuation, and speaker identification when needed.</p>
+            </div>
+          </div>
+          <div class="practice-tip"><strong>Quick apply:</strong> YouTube, Google Meet, and Microsoft Stream all generate auto-captions — always review and correct before sharing. <a href="https://otter.ai" target="_blank" rel="noopener">Otter.ai</a> can assist with longer recordings.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════ FORMATIVE -->
+  <section id="formative" class="section-wrapper" aria-labelledby="formative-heading">
+    <div class="container fade-in">
+      <p class="section-label">Section 5</p>
+      <h2 id="formative-heading">Knowledge Checks</h2>
+      <div class="divider" aria-hidden="true"></div>
+      <p>Three activities to confirm your understanding before the summative task. These are low-stakes and meant to help you solidify the material — not judge you.</p>
+
+      <!-- KC 1 -->
+      <div class="quiz-block" aria-labelledby="kc1-h">
+        <h3 id="kc1-h">Knowledge Check 1 — Accessibility Fundamentals</h3>
+        <p class="quiz-subtitle">Multiple choice · 5 questions · Select the best answer for each</p>
+
+        <fieldset style="border:none;padding:0;margin-bottom:2rem;">
+          <legend class="quiz-q">1. Which Colorado law specifically requires local school districts to meet WCAG 2.1 Level AA?</legend>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q1" id="q1a" value="a"/><label for="q1a">Section 504 of the Rehabilitation Act</label></li>
+            <li class="quiz-option"><input type="radio" name="q1" id="q1b" value="b"/><label for="q1b">IDEA (Individuals with Disabilities Education Act)</label></li>
+            <li class="quiz-option"><input type="radio" name="q1" id="q1c" value="c"/><label for="q1c">Colorado HB 21-1110</label></li>
+            <li class="quiz-option"><input type="radio" name="q1" id="q1d" value="d"/><label for="q1d">The ADA Amendments Act of 2008</label></li>
+          </ul>
+        </fieldset>
+
+        <fieldset style="border:none;padding:0;margin-bottom:2rem;">
+          <legend class="quiz-q">2. A screen reader user navigates a document by jumping between headings. Which is the most serious problem?</legend>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q2" id="q2a" value="a"/><label for="q2a">The document uses Heading 2 before Heading 1</label></li>
+            <li class="quiz-option"><input type="radio" name="q2" id="q2b" value="b"/><label for="q2b">Section titles are bold and large, but no actual heading styles are applied</label></li>
+            <li class="quiz-option"><input type="radio" name="q2" id="q2c" value="c"/><label for="q2c">The document has more than three heading levels</label></li>
+            <li class="quiz-option"><input type="radio" name="q2" id="q2d" value="d"/><label for="q2d">The Heading 1 style is a different color than the body text</label></li>
+          </ul>
+        </fieldset>
+
+        <fieldset style="border:none;padding:0;margin-bottom:2rem;">
+          <legend class="quiz-q">3. Which alt text is most appropriate for a bar chart showing monthly attendance rates?</legend>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q3" id="q3a" value="a"/><label for="q3a">alt="chart"</label></li>
+            <li class="quiz-option"><input type="radio" name="q3" id="q3b" value="b"/><label for="q3b">alt="attendance image"</label></li>
+            <li class="quiz-option"><input type="radio" name="q3" id="q3c" value="c"/><label for="q3c">alt="Bar chart showing monthly student attendance, August through May, with February lowest at 88%"</label></li>
+            <li class="quiz-option"><input type="radio" name="q3" id="q3d" value="d"/><label for="q3d">alt="This is a bar chart about attendance"</label></li>
+          </ul>
+        </fieldset>
+
+        <fieldset style="border:none;padding:0;margin-bottom:2rem;">
+          <legend class="quiz-q">4. What is the minimum contrast ratio for normal body text at WCAG 2.2 Level AA?</legend>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q4" id="q4a" value="a"/><label for="q4a">2:1</label></li>
+            <li class="quiz-option"><input type="radio" name="q4" id="q4b" value="b"/><label for="q4b">3:1</label></li>
+            <li class="quiz-option"><input type="radio" name="q4" id="q4c" value="c"/><label for="q4c">4.5:1</label></li>
+            <li class="quiz-option"><input type="radio" name="q4" id="q4d" value="d"/><label for="q4d">7:1</label></li>
+          </ul>
+        </fieldset>
+
+        <fieldset style="border:none;padding:0;margin-bottom:2rem;">
+          <legend class="quiz-q">5. Which link text best meets WCAG guidelines?</legend>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q5" id="q5a" value="a"/><label for="q5a">Click here</label></li>
+            <li class="quiz-option"><input type="radio" name="q5" id="q5b" value="b"/><label for="q5b">More information</label></li>
+            <li class="quiz-option"><input type="radio" name="q5" id="q5c" value="c"/><label for="q5c">https://webaim.org/resources/contrastchecker/</label></li>
+            <li class="quiz-option"><input type="radio" name="q5" id="q5d" value="d"/><label for="q5d">Check your contrast ratio with the WebAIM Contrast Checker</label></li>
+          </ul>
+        </fieldset>
+
+        <button class="quiz-submit" onclick="checkQuiz1()">Check My Answers</button>
+        <div id="feedback-kc1" class="quiz-feedback" role="alert" aria-live="polite"></div>
+      </div>
+
+      <!-- KC 2 -->
+      <div class="quiz-block" aria-labelledby="kc2-h">
+        <h3 id="kc2-h">Knowledge Check 2 — Match the Issue to the Fix</h3>
+        <p class="quiz-subtitle">For each accessibility issue, select the best remediation from the dropdown</p>
+
+        <div class="match-item">
+          <strong>Issue A:</strong> An image of a pie chart has <code>alt="image001.png"</code>
+          <label for="match-a" class="sr-only">Fix for Issue A</label>
+          <select class="match-select" id="match-a" aria-label="Fix for Issue A: unhelpful alt text">
+            <option value="">— Select a fix —</option>
+            <option value="1">Rewrite alt text to describe the chart's data and key finding</option>
+            <option value="2">Remove the alt attribute entirely</option>
+            <option value="3">Increase the font size of the caption</option>
+            <option value="4">Apply built-in Heading styles instead of manual formatting</option>
+            <option value="5">Edit auto-captions to correct errors before publishing</option>
+            <option value="6">Replace vague anchor text with a descriptive link label</option>
+          </select>
+        </div>
+        <div class="match-item">
+          <strong>Issue B:</strong> A training video is shared with only unreviewed YouTube auto-captions
+          <label for="match-b" class="sr-only">Fix for Issue B</label>
+          <select class="match-select" id="match-b" aria-label="Fix for Issue B: unreviewed auto-captions">
+            <option value="">— Select a fix —</option>
+            <option value="1">Rewrite alt text to describe the chart's data and key finding</option>
+            <option value="2">Remove the alt attribute entirely</option>
+            <option value="3">Increase the font size of the caption</option>
+            <option value="4">Apply built-in Heading styles instead of manual formatting</option>
+            <option value="5">Edit auto-captions to correct errors before publishing</option>
+            <option value="6">Replace vague anchor text with a descriptive link label</option>
+          </select>
+        </div>
+        <div class="match-item">
+          <strong>Issue C:</strong> A slide deck uses bold + large font for section titles instead of built-in Heading styles
+          <label for="match-c" class="sr-only">Fix for Issue C</label>
+          <select class="match-select" id="match-c" aria-label="Fix for Issue C: bold text as headings">
+            <option value="">— Select a fix —</option>
+            <option value="1">Rewrite alt text to describe the chart's data and key finding</option>
+            <option value="2">Remove the alt attribute entirely</option>
+            <option value="3">Increase the font size of the caption</option>
+            <option value="4">Apply built-in Heading styles instead of manual formatting</option>
+            <option value="5">Edit auto-captions to correct errors before publishing</option>
+            <option value="6">Replace vague anchor text with a descriptive link label</option>
+          </select>
+        </div>
+        <div class="match-item">
+          <strong>Issue D:</strong> An email contains the link text "For the new policy, click here."
+          <label for="match-d" class="sr-only">Fix for Issue D</label>
+          <select class="match-select" id="match-d" aria-label="Fix for Issue D: vague link text">
+            <option value="">— Select a fix —</option>
+            <option value="1">Rewrite alt text to describe the chart's data and key finding</option>
+            <option value="2">Remove the alt attribute entirely</option>
+            <option value="3">Increase the font size of the caption</option>
+            <option value="4">Apply built-in Heading styles instead of manual formatting</option>
+            <option value="5">Edit auto-captions to correct errors before publishing</option>
+            <option value="6">Replace vague anchor text with a descriptive link label</option>
+          </select>
+        </div>
+
+        <button class="quiz-submit" onclick="checkMatch()" style="margin-top:.5rem;">Check My Matches</button>
+        <div id="feedback-kc2" class="quiz-feedback" role="alert" aria-live="polite"></div>
+      </div>
+
+      <!-- KC 3: Scenario document -->
+      <div class="quiz-block" aria-labelledby="kc3-h">
+        <h3 id="kc3-h">Knowledge Check 3 — Spot the Issues</h3>
+        <p class="quiz-subtitle">Read the sample staff document below, then answer the three questions about the accessibility problems it contains.</p>
+
+        <div class="scenario-doc" aria-label="Sample staff newsletter with accessibility issues">
+          <span class="scenario-doc-label">Sample Document — Find the Issues</span>
+
+          <div style="margin-top:1.5rem;">
+            <span class="fake-heading">Jefferson Elementary — May Staff Newsletter</span>
+            <p>Welcome to our May newsletter! We have lots of exciting things to share this month.</p>
+
+            <span class="fake-heading">Upcoming Events</span>
+            <p>Our spring concert is coming up on May 22nd at 6pm in the gymnasium. Please <a href="#" class="bad-link">click here</a> to RSVP. For the field day schedule, <a href="#" class="bad-link">click here</a>.</p>
+
+            <span class="fake-heading">Staff Recognition</span>
+            <span class="img-box" role="img" aria-label="">📷 [Photo of staff award ceremony]</span>
+            <p class="low-contrast">Congratulations to our May Staff Star, Rosa Medina, for her outstanding contributions to our school community this month!</p>
+
+            <span class="fake-heading">Important Reminder</span>
+            <p>All end-of-year reports are due by June 1st. Please review the updated guidelines — <a href="#" class="bad-link">more information</a>.</p>
+          </div>
+
+          <div class="scenario-doc-issues" role="note">
+            <strong>💡 Hint: There are at least three distinct accessibility issues in this document. Read carefully before answering.</strong>
+            Look at the structure, the links, the image, and the text contrast as you review.
+          </div>
+        </div>
+
+        <!-- Q1: Multiple choice -->
+        <fieldset style="border:none;padding:0;margin-bottom:2rem;">
+          <legend class="quiz-q">1. The section titles in this document ("Upcoming Events," "Staff Recognition," etc.) are formatted using bold text and a larger font size, but no heading styles were applied. Why is this a problem for accessibility?</legend>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="kc3q1" id="k1a" value="a"/><label for="k1a">Bold text is harder to read for people with dyslexia.</label></li>
+            <li class="quiz-option"><input type="radio" name="kc3q1" id="k1b" value="b"/><label for="k1b">Screen readers cannot navigate to visually formatted text the way they can navigate to real heading elements, so users lose the ability to jump between sections.</label></li>
+            <li class="quiz-option"><input type="radio" name="kc3q1" id="k1c" value="c"/><label for="k1c">The font size is too large and causes layout problems on mobile devices.</label></li>
+            <li class="quiz-option"><input type="radio" name="kc3q1" id="k1d" value="d"/><label for="k1d">There is no problem — bold text is equivalent to heading styles for screen readers.</label></li>
+          </ul>
+        </fieldset>
+
+        <!-- Q2: True/False -->
+        <fieldset style="border:none;padding:0;margin-bottom:2rem;">
+          <legend class="quiz-q">2. True or False: The link text "click here" and "more information" are acceptable because the surrounding sentence explains where each link goes.</legend>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="kc3q2" id="k2t" value="false"/><label for="k2t">False — link text must make sense on its own, without the surrounding sentence, because screen reader users often navigate by jumping between links and hear only the link text.</label></li>
+            <li class="quiz-option"><input type="radio" name="kc3q2" id="k2f" value="true"/><label for="k2f">True — the surrounding context is always enough to make any link accessible.</label></li>
+          </ul>
+        </fieldset>
+
+        <!-- Q3: Short answer via select -->
+        <fieldset style="border:none;padding:0;margin-bottom:2rem;">
+          <legend class="quiz-q">3. The staff recognition photo has an empty alt attribute (<code>alt=""</code>) and the congratulations text below it appears in a very light gray color. Which of the following best describes the two issues and how to fix both?</legend>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="kc3q3" id="k3a" value="a"/><label for="k3a">The empty alt text is fine for a decorative photo. The light gray text should be darkened so it meets the 4.5:1 contrast ratio required for normal text.</label></li>
+            <li class="quiz-option"><input type="radio" name="kc3q3" id="k3b" value="b"/><label for="k3b">The photo likely conveys meaningful information (who is pictured and why), so it needs descriptive alt text. The light gray congratulations text fails color contrast and should be darkened to meet 4.5:1.</label></li>
+            <li class="quiz-option"><input type="radio" name="kc3q3" id="k3c" value="c"/><label for="k3c">Both issues are minor and do not need to be fixed for a staff newsletter.</label></li>
+            <li class="quiz-option"><input type="radio" name="kc3q3" id="k3d" value="d"/><label for="k3d">The alt text needs to be removed entirely. The text color is fine as long as the font is large enough.</label></li>
+          </ul>
+        </fieldset>
+
+        <button class="quiz-submit" onclick="checkKC3()">Check My Answers</button>
+        <div id="feedback-kc3" class="quiz-feedback" role="alert" aria-live="polite"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════ SUMMATIVE -->
+  <section id="summative" class="section-wrapper" aria-labelledby="summative-heading">
+    <div class="container fade-in">
+      <p class="section-label">Section 6 — Summative Assessment</p>
+      <h2 id="summative-heading">Put It Into Practice</h2>
+      <div class="divider" aria-hidden="true"></div>
+      <p>This final task asks you to apply what you've reviewed — not on a hypothetical, but on something real from your own work. You won't be assessed on perfection; you'll be assessed on thoughtfulness and understanding.</p>
+      <div class="summative-card">
+        <h3 style="color:var(--white);font-size:1.15rem;font-weight:700;margin-bottom:1.5rem;">Your Task</h3>
+        <ol class="summative-steps">
+          <li>Select one digital artifact you've created recently — an email draft, a document, a slide deck, a form, or any digital file you use in your role.</li>
+          <li>Review it against the Big 5: headings, alt text, color contrast, link text, and captions (if applicable).</li>
+          <li>Identify at least two accessibility issues — or, if it's already accessible, describe two practices you applied intentionally.</li>
+          <li>In the reflection box below, describe: (a) what you found, (b) what you changed or would change, and (c) why those changes matter for your users.</li>
+        </ol>
+        <label class="summative-label" for="summative-reflection">Your Reflection <span style="font-weight:400;color:rgba(255,255,255,.45)">(minimum 150 words)</span></label>
+        <textarea class="summative-textarea" id="summative-reflection" aria-describedby="reflection-hint" placeholder="Describe the artifact you chose, the accessibility issues you found (or intentional practices you applied), what you changed or would change, and why those changes matter for your users…"></textarea>
+        <p id="reflection-hint" style="font-size:.77rem;color:rgba(255,255,255,.38);margin-top:.5rem;">This reflection stays in your browser — print or save this page to keep a copy.</p>
+
+        <h3 style="color:var(--white);font-size:.95rem;font-weight:700;margin-top:2.75rem;margin-bottom:.875rem;">Grading Rubric</h3>
+        <table class="rubric-table" aria-label="Summative assessment rubric">
+          <thead><tr><th scope="col">Criterion</th><th scope="col">Meets Standard</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Artifact Identified</strong></td><td>Learner clearly identifies a real artifact from their own work</td></tr>
+            <tr><td><strong>Issues / Practices Named</strong></td><td>At least two specific issues or practices identified with reference to WCAG/POUR</td></tr>
+            <tr><td><strong>Changes Described</strong></td><td>What was or would be changed, with enough detail to demonstrate understanding</td></tr>
+            <tr><td><strong>User Impact Addressed</strong></td><td>Reflection connects the change to a real user need, not just compliance</td></tr>
+            <tr><td><strong>Depth of Reflection</strong></td><td>Genuine engagement with the material, not surface-level listing</td></tr>
+          </tbody>
+        </table>
+        <button class="btn-gold" onclick="completeSummative()">
+          Submit Reflection
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+        </button>
+        <div id="completion-banner" class="completion-banner" role="alert" aria-live="polite">
+          <h3>🎉 Reflection Submitted!</h3>
+          <p>Now review the sample reflection below and use the rubric to self-assess your own response.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════ SAMPLE REFLECTION MODAL -->
+  <div id="sample-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc">
+    <div id="sample-modal">
+
+      <div class="modal-header">
+        <div class="modal-header-text">
+          <p class="modal-eyebrow">Self-Assessment</p>
+          <h3 id="modal-title">Sample Reflection &amp; Rubric Check</h3>
+          <p id="modal-desc">Read the sample below, then use the checklist to self-assess your own reflection.</p>
+        </div>
+        <button id="modal-close" onclick="closeModal()" aria-label="Close sample reflection">✕</button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="modal-rubric-label">Sample Response</div>
+        <div class="modal-sample-text" aria-label="Sample reflection response">
+          <p>For this reflection, I chose a staff newsletter I created last month in Google Docs and distributed as a PDF. It's a two-page document I send to all building staff summarizing upcoming events, policy reminders, and professional learning opportunities.</p>
+          <p>When I reviewed it against the Big 5, I found two clear issues. First, I had used bold text and a larger font size to create section titles — "Upcoming Events," "PD Reminders," and so on — but I had not applied any actual Heading styles from the Paragraph Styles menu. This means that anyone using a screen reader would hear the entire newsletter read as one long block of body text, with no way to jump between sections or understand the structure. The fix is straightforward: I need to apply Heading 2 to each section title using the built-in style rather than formatting it manually.</p>
+          <p>Second, I included two hyperlinks in the document. One read "Click here to register" and another read "More information." Neither of these makes sense without the surrounding sentence, which means a screen reader user navigating by links would have no idea where they lead. I revised both: "Click here to register" became "Register for the October 14 PD Day (Google Form)" and "More information" became "Read the updated district leave policy (PDF)."</p>
+          <p>These changes matter because at least two staff members in my building use assistive technology — one uses a screen reader due to low vision, and another uses keyboard-only navigation after a repetitive strain injury. When my newsletter isn't structured accessibly, I'm creating barriers for colleagues I work with every day, and I'm doing it without realizing it. Applying real heading styles and writing descriptive links costs me almost no extra time but makes the document genuinely usable for everyone.</p>
+        </div>
+
+        <div class="modal-rubric-section">
+          <p class="modal-rubric-label">Self-Assessment Checklist</p>
+          <p style="font-size:.88rem;color:var(--steel);margin-bottom:1.25rem;">Check each box if your reflection met that criterion. Be honest — this is for your own learning.</p>
+          <div class="self-assess-grid" role="list">
+
+            <div class="self-assess-row" role="listitem">
+              <input type="checkbox" class="self-assess-check" id="sa1" aria-describedby="sa1-label"/>
+              <label class="self-assess-label" id="sa1-label" for="sa1">
+                <strong>Artifact Identified</strong>
+                I clearly named a real digital artifact from my own work (not a hypothetical).
+              </label>
+            </div>
+
+            <div class="self-assess-row" role="listitem">
+              <input type="checkbox" class="self-assess-check" id="sa2" aria-describedby="sa2-label"/>
+              <label class="self-assess-label" id="sa2-label" for="sa2">
+                <strong>Issues / Practices Named</strong>
+                I identified at least two specific accessibility issues or intentional practices, and connected them to a WCAG principle or the Big 5.
+              </label>
+            </div>
+
+            <div class="self-assess-row" role="listitem">
+              <input type="checkbox" class="self-assess-check" id="sa3" aria-describedby="sa3-label"/>
+              <label class="self-assess-label" id="sa3-label" for="sa3">
+                <strong>Changes Described</strong>
+                I explained specifically what I changed or would change — not just that "I would fix it," but <em>how</em>.
+              </label>
+            </div>
+
+            <div class="self-assess-row" role="listitem">
+              <input type="checkbox" class="self-assess-check" id="sa4" aria-describedby="sa4-label"/>
+              <label class="self-assess-label" id="sa4-label" for="sa4">
+                <strong>User Impact Addressed</strong>
+                I connected my changes to real people — a colleague, a student, or a user with a specific need — not just compliance language.
+              </label>
+            </div>
+
+            <div class="self-assess-row" role="listitem">
+              <input type="checkbox" class="self-assess-check" id="sa5" aria-describedby="sa5-label"/>
+              <label class="self-assess-label" id="sa5-label" for="sa5">
+                <strong>Depth of Reflection</strong>
+                My response goes beyond surface-level listing. I showed genuine thinking about why this matters, not just what the rules say.
+              </label>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <p class="modal-footer-note">Not quite there on one or two criteria? That's useful information — consider revisiting your reflection before submitting it to your facilitator.</p>
+        <button class="btn-close-modal" onclick="closeModal()">
+          Done — Close
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ RESOURCES -->
+  <section id="resources" class="section-wrapper" aria-labelledby="resources-heading">
+    <div class="container fade-in">
+      <p class="section-label">Quick Reference</p>
+      <h2 id="resources-heading">Tools &amp; Resources</h2>
+      <p style="color:rgba(255,255,255,.7);margin-top:1rem;">Bookmark these — they're the tools and references you'll reach for most often when creating accessible content.</p>
+      <div class="resources-grid">
+        <a href="https://webaim.org/resources/contrastchecker/" class="resource-card" target="_blank" rel="noopener"><span class="resource-card-title">WebAIM Contrast Checker</span><span class="resource-card-desc">Check text/background color ratios against WCAG standards</span></a>
+        <a href="https://www.w3.org/WAI/WCAG22/quickref/" class="resource-card" target="_blank" rel="noopener"><span class="resource-card-title">WCAG 2.2 Quick Reference</span><span class="resource-card-desc">W3C's full filterable reference for all success criteria</span></a>
+        <a href="https://wave.webaim.org/" class="resource-card" target="_blank" rel="noopener"><span class="resource-card-title">WAVE Accessibility Evaluator</span><span class="resource-card-desc">Free tool to evaluate web page accessibility visually</span></a>
+        <a href="https://www.w3.org/WAI/fundamentals/accessibility-principles/" class="resource-card" target="_blank" rel="noopener"><span class="resource-card-title">WAI — POUR Principles</span><span class="resource-card-desc">W3C's official overview of the four WCAG principles</span></a>
+        <a href="https://support.microsoft.com/en-us/office/improve-accessibility-with-the-accessibility-checker" class="resource-card" target="_blank" rel="noopener"><span class="resource-card-title">Microsoft Accessibility Checker</span><span class="resource-card-desc">Built into Word, PowerPoint, Excel, and Outlook</span></a>
+        <a href="https://support.google.com/docs/answer/6282736" class="resource-card" target="_blank" rel="noopener"><span class="resource-card-title">Google Docs Accessibility</span><span class="resource-card-desc">Tips for accessible documents in Google Workspace</span></a>
+        <a href="https://www.section508.gov/create/" class="resource-card" target="_blank" rel="noopener"><span class="resource-card-title">Section508.gov — Create</span><span class="resource-card-desc">Guides for accessible documents, media, and software</span></a>
+        <a href="https://leg.colorado.gov/bills/hb21-1110" class="resource-card" target="_blank" rel="noopener"><span class="resource-card-title">Colorado HB 21-1110</span><span class="resource-card-desc">Full text of Colorado's web accessibility law</span></a>
+      </div>
+      <footer class="footer-credit">
+        <div><strong>Digital Accessibility Refresher</strong> · Created by <strong>Andrea MacFarlane</strong><br/>Western Governors University · Learning Experience Design Lab — D299 · 2026</div>
+        <div>Designed to meet <strong>WCAG 2.2 Level AA</strong> · UDL-aligned</div>
+      </footer>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// ── DASHBOARD ──────────────────────────────────────────
+const SECTIONS = ['hero','laws','empathy','pour','big5','formative','summative','resources'];
+const visited  = new Set(['hero']);
+let   current  = 'hero';
+
+function scrollTo(id){ document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); }
+
+function refreshDash(){
+  const steps      = document.querySelectorAll('.dash-step');
+  const lines      = document.querySelectorAll('.dash-line');
+  const curIdx     = SECTIONS.indexOf(current);
+
+  steps.forEach((s,i)=>{
+    s.classList.remove('active','done');
+    const sid = s.dataset.section;
+    if(sid === current)       s.classList.add('active');
+    else if(visited.has(sid)) s.classList.add('done');
+  });
+
+  lines.forEach((l,i)=>{
+    const leftDone = visited.has(SECTIONS[i]) && i < curIdx;
+    l.classList.toggle('done', leftDone);
+  });
+
+  const pct = Math.round((visited.size / SECTIONS.length)*100);
+  document.getElementById('dash-fill').style.width  = pct+'%';
+  document.getElementById('dash-pct').textContent   = pct+'%';
+  document.getElementById('dash-track').setAttribute('aria-valuenow', pct);
+}
+
+new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      visited.add(e.target.id);
+      current = e.target.id;
+      refreshDash();
+    }
+  });
+},{threshold:0.3}).observe && SECTIONS.forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ visited.add(id); current=id; refreshDash(); } });
+  },{threshold:0.3}).observe(el);
+});
+
+// ── FADE-IN ────────────────────────────────────────────
+new IntersectionObserver((e)=>{ e.forEach(x=>{ if(x.isIntersecting) x.target.classList.add('visible'); }); },{threshold:.1})
+  .observe && document.querySelectorAll('.fade-in').forEach(el=>{
+    new IntersectionObserver((e)=>{ e.forEach(x=>{ if(x.isIntersecting) x.target.classList.add('visible'); }); },{threshold:.1}).observe(el);
+  });
+
+// ── TABS ───────────────────────────────────────────────
+const tabs   = document.querySelectorAll('[role="tab"]');
+const panels = document.querySelectorAll('[role="tabpanel"]');
+tabs.forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    tabs.forEach(b=>b.setAttribute('aria-selected','false'));
+    panels.forEach(p=>{ p.setAttribute('aria-hidden','true'); p.classList.remove('active'); });
+    btn.setAttribute('aria-selected','true');
+    const p = document.getElementById(btn.getAttribute('aria-controls'));
+    if(p){ p.setAttribute('aria-hidden','false'); p.classList.add('active'); }
+  });
+  btn.addEventListener('keydown',(e)=>{
+    const i = [...tabs].indexOf(btn);
+    if(e.key==='ArrowRight'){ tabs[(i+1)%tabs.length].focus(); tabs[(i+1)%tabs.length].click(); }
+    if(e.key==='ArrowLeft') { tabs[(i-1+tabs.length)%tabs.length].focus(); tabs[(i-1+tabs.length)%tabs.length].click(); }
+    if(e.key==='Home'){ tabs[0].focus(); tabs[0].click(); }
+    if(e.key==='End') { tabs[tabs.length-1].focus(); tabs[tabs.length-1].click(); }
+  });
+});
+
+// ── QUIZ 1 ─────────────────────────────────────────────
+function checkQuiz1(){
+  const ans = {q1:'c',q2:'b',q3:'c',q4:'c',q5:'d'};
+  const exp = {
+    q1:'Colorado HB 21-1110 specifically requires state and local government entities, including school districts, to comply with WCAG 2.1 Level AA.',
+    q2:'Bold + large font looks like a heading visually but has no semantic structure. Screen readers see only a paragraph — nothing to navigate to.',
+    q3:'Good alt text describes the data and key finding so a screen reader user gets the same information as a sighted user.',
+    q4:'WCAG 2.2 Level AA requires at least 4.5:1 for normal text. Large text (18pt+ or bold 14pt+) requires at least 3:1.',
+    q5:'"Check your contrast ratio with the WebAIM Contrast Checker" is self-contained — a user jumping between links knows exactly where it leads.'
+  };
+  let score=0, msg='', ok=true;
+  Object.keys(ans).forEach(q=>{
+    const s=document.querySelector(`input[name="${q}"]:checked`);
+    if(!s){ok=false;return;}
+    const c=s.value===ans[q]; if(c)score++;
+    msg+=`<br/><strong>Q${q.slice(1)}:</strong> ${c?'✓ Correct':'✗ Incorrect'} — ${exp[q]}`;
+  });
+  const fb=document.getElementById('feedback-kc1');
+  if(!ok){fb.className='quiz-feedback incorrect';fb.textContent='Please answer all five questions before checking.';return;}
+  fb.className=score>=4?'quiz-feedback correct':'quiz-feedback incorrect';
+  fb.innerHTML=`<strong>${score}/5 correct</strong>${score>=4?' — Great work!':' — Review the sections above and try again.'}<br/><br/>${msg}`;
+  if(score>=4){visited.add('formative');refreshDash();}
+}
+
+// ── QUIZ 2 ─────────────────────────────────────────────
+function checkMatch(){
+  const cor={'match-a':'1','match-b':'5','match-c':'4','match-d':'6'};
+  const lbl={'match-a':'Issue A (alt text)','match-b':'Issue B (captions)','match-c':'Issue C (headings)','match-d':'Issue D (links)'};
+  let score=0, msg='', ok=true;
+  Object.keys(cor).forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el||!el.value){ok=false;return;}
+    const c=el.value===cor[id]; if(c)score++;
+    msg+=`<br/><strong>${lbl[id]}:</strong> ${c?'✓ Correct':'✗ Incorrect'}`;
+  });
+  const fb=document.getElementById('feedback-kc2');
+  if(!ok){fb.className='quiz-feedback incorrect';fb.textContent='Please match all four issues before checking.';return;}
+  fb.className=score===4?'quiz-feedback correct':'quiz-feedback incorrect';
+  fb.innerHTML=`<strong>${score}/4 matched correctly</strong>${score===4?' — Perfect!':' — Review the Big 5 section and try again.'}<br/>${msg}`;
+}
+
+// ── QUIZ 3 ─────────────────────────────────────────────
+function checkKC3(){
+  const ans = { kc3q1:'b', kc3q2:'false', kc3q3:'b' };
+  const exp = {
+    kc3q1: 'Correct — visually formatted text has no semantic structure. Screen readers can only navigate to real heading elements (H1, H2, H3), so bold-styled "headings" are invisible to assistive technology navigation.',
+    kc3q2: 'Correct — link text must be descriptive on its own. Screen reader users often pull up a list of all links on a page and hear only the anchor text, with no surrounding sentence for context.',
+    kc3q3: 'Correct — a photo of a named staff member receiving an award conveys meaningful information and needs descriptive alt text. The light gray text also fails the 4.5:1 minimum contrast ratio and must be darkened to be accessible.'
+  };
+  const wrong = {
+    kc3q1: 'Not quite — the core problem is structural, not visual. Screen readers navigate by heading elements, not by text that looks bold or large. Without real heading styles, there is nothing for assistive technology to find.',
+    kc3q2: 'Not quite — surrounding context is not enough. Screen reader users can navigate a page by jumping between links, hearing only the link text itself. "Click here" and "more information" are meaningless in that context.',
+    kc3q3: 'Not quite — the photo of a named staff member conveys meaningful information, so an empty alt attribute is not appropriate here. And the light gray text does fail contrast requirements regardless of the audience.'
+  };
+
+  let score = 0, msg = '', allAnswered = true;
+  Object.keys(ans).forEach(q => {
+    const sel = document.querySelector(`input[name="${q}"]:checked`);
+    if (!sel) { allAnswered = false; return; }
+    const ok = sel.value === ans[q];
+    if (ok) score++;
+    msg += `<br/><strong>Q${Object.keys(ans).indexOf(q)+1}:</strong> ${ok ? '✓ ' + exp[q] : '✗ ' + wrong[q]}`;
+  });
+
+  const fb = document.getElementById('feedback-kc3');
+  if (!allAnswered) {
+    fb.className = 'quiz-feedback incorrect';
+    fb.textContent = 'Please answer all three questions before checking.';
+    return;
+  }
+  fb.className = score >= 2 ? 'quiz-feedback correct' : 'quiz-feedback incorrect';
+  fb.innerHTML = `<strong>${score}/3 correct</strong>${score === 3 ? ' — Excellent eye for accessibility issues!' : score === 2 ? ' — Good work! Review the explanation above for the one you missed.' : ' — Review the Big 5 Practices section and try again.'}<br/>${msg}`;
+  if (score >= 2) { visited.add('formative'); refreshDash(); }
+}
+function completeSummative(){
+  const text  = document.getElementById('summative-reflection').value.trim();
+  const words = text ? text.split(/\s+/).length : 0;
+  const banner = document.getElementById('completion-banner');
+
+  if(words < 50){
+    banner.style.cssText = 'display:block;background:var(--error-bg);border-color:var(--error);color:var(--error);';
+    banner.innerHTML = '<h3>Please add more to your reflection</h3><p>Your reflection should be at least 150 words. Describe the artifact you chose and connect your changes to a real user need.</p>';
+    banner.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+
+  // Show the inline success banner
+  banner.style.cssText = 'display:block;';
+  banner.scrollIntoView({behavior:'smooth', block:'center'});
+
+  // Mark complete in dashboard
+  visited.add('summative'); visited.add('resources'); current='summative'; refreshDash();
+
+  // Open the sample reflection modal after a short pause
+  setTimeout(openModal, 600);
+}
+
+// ── MODAL ──────────────────────────────────────────────
+function openModal(){
+  const backdrop = document.getElementById('sample-modal-backdrop');
+  backdrop.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Move focus into the modal for accessibility
+  document.getElementById('modal-close').focus();
+}
+
+function closeModal(){
+  const backdrop = document.getElementById('sample-modal-backdrop');
+  backdrop.classList.remove('open');
+  document.body.style.overflow = '';
+  // Return focus to the submit button
+  document.querySelector('.btn-gold').focus();
+}
+
+// Close on backdrop click (outside modal box)
+document.getElementById('sample-modal-backdrop').addEventListener('click', function(e){
+  if(e.target === this) closeModal();
+});
+
+// Close on Escape key
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape' && document.getElementById('sample-modal-backdrop').classList.contains('open')){
+    closeModal();
+  }
+});
+</script>
+
+</body>
+</html>
